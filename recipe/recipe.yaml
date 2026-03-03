@@ -11,6 +11,7 @@ source:
   patches:
     - add-sched-include.patch
     - fix-destructors-cpp20.patch
+    - install-third-party-dds.patch
 
 build:
   number: 0
@@ -23,6 +24,11 @@ build:
       -DBUILD_EXAMPLES=OFF
       -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER
     - cmake --build build/ --target install
+    # Fix rpath of third-party libraries.
+    # Now the linker will look in the same directory as the main library.
+    - cd $PREFIX/lib/unitree/third-party
+    - patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." libddsc.so
+    - patchelf --set-rpath "\$ORIGIN:\$ORIGIN/../.." libddscxx.so
 
 requirements:
   build:
