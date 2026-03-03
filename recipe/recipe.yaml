@@ -11,9 +11,10 @@ source:
   patches:
     - add-sched-include.patch
     - fix-destructors-cpp20.patch
+    - install-third-party-dds.patch
 
 build:
-  number: 0
+  number: 1
   skip: not linux
   script:
     - cmake -S . -B build/
@@ -23,6 +24,10 @@ build:
       -DBUILD_EXAMPLES=OFF
       -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER
     - cmake --build build/ --target install
+  dynamic_linking:
+    rpaths:
+      - lib/unitree/third-party
+      - lib/
 
 requirements:
   build:
