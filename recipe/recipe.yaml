@@ -25,6 +25,8 @@ build:
         - cd thirdparty/lib/aarch64
     # Rename the vendored libraries to avoid conflicts with cyclonedds.
     - patchelf --replace-needed libddsc.so.0 libddsc_unitree.so.0 libddscxx.so
+    - patchelf --set-soname libddsc_unitree.so libddsc.so
+    - patchelf --set-soname libddscxx_unitree.so libddscxx.so
     - mv libddsc.so libddsc_unitree.so
     - mv libddscxx.so libddscxx_unitree.so
     - rm libddsc.so.0 libddscxx.so.0
