@@ -11,12 +11,29 @@ source:
   patches:
     - add-sched-include.patch
     - fix-destructors-cpp20.patch
-    - install-third-party-dds.patch
+    - rename-vendored-dds-shlib.patch
 
 build:
-  number: 1
+  number: 2
   skip: not linux
   script:
+    - if: x86_64
+      then:
+        - cd thirdparty/lib/x86_64
+    - if: aarch64
+      then:
+        - cd thirdparty/lib/aarch64
+    # Rename the vendored libraries to avoid conflicts with cyclonedds.
+    - patchelf --replace-needed libddsc.so.0 libddsc_unitree.so.0 libddscxx.so
+    - mv libddsc.so libddsc_unitree.so
+    - mv libddscxx.so libddscxx_unitree.so
+    - rm libddsc.so.0 libddscxx.so.0
+    - ln -s libddsc_unitree.so libddsc_unitree.so.0
+    - ln -s libddscxx_unitree.so libddscxx_unitree.so.0
+    - ldd libddscxx_unitree.so
+    - ls -lah
+    - cd -
+    # Build and install the SDK.
     - cmake -S . -B build/
       -GNinja
       -DCMAKE_BUILD_TYPE=Release
@@ -24,10 +41,6 @@ build:
       -DBUILD_EXAMPLES=OFF
       -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=NEVER
     - cmake --build build/ --target install
-  dynamic_linking:
-    rpaths:
-      - lib/unitree/third-party
-      - lib/
 
 requirements:
   build:
@@ -36,12 +49,13 @@ requirements:
     - ${{ compiler('cxx') }}
     - cmake
     - ninja
+    - patchelf
   host:
   run:
 
 tests:
   - script:
-      - cmake-package-check unitree_sdk2
+      - cmake-package-check unitree_sdk2 --targets unitree_sdk2 ddsc ddscxx
     requirements:
       run:
         - ${{ stdlib('c') }}
@@ -55,6 +69,25 @@ tests:
     requirements:
       run:
         - cf-nvidia-tools
+  - script:
+      - ldd $PREFIX/lib/libddsc_unitree.so
+      - ldd $PREFIX/lib/libddscxx_unitree.so
+      - touch CMakeLists.txt
+      - echo "cmake_minimum_required(VERSION 3.16)" >> CMakeLists.txt
+      - echo "project(unitree_examples CXX)" >> CMakeLists.txt
+      - echo "find_package(unitree_sdk2 CONFIG REQUIRED)" >> CMakeLists.txt
+      - echo "add_subdirectory(example)" >> CMakeLists.txt
+      - cmake -S . -B build/ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$PREFIX
+      - cmake --build build/
+    files:
+      source:
+        - example/
+    requirements:
+      run:
+        - cmake
+        - eigen
+        - ninja
+        - yaml-cpp
 
 about:
   homepage: https://support.unitree.com/home/zh/developer
