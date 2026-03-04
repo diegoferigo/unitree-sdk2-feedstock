@@ -82,6 +82,8 @@ tests:
         - example/
     requirements:
       run:
+        - ${{ compiler('c') }}
+        - ${{ compiler('cxx') }}
         - cmake
         - eigen
         - ninja
