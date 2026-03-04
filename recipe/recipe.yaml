@@ -30,8 +30,8 @@ build:
     - rm libddsc.so.0 libddscxx.so.0
     - ln -s libddsc_unitree.so libddsc_unitree.so.0
     - ln -s libddscxx_unitree.so libddscxx_unitree.so.0
-    - cd -
     # Build and install the SDK.
+    - cd -
     - cmake -S . -B build/
       -GNinja
       -DCMAKE_BUILD_TYPE=Release
