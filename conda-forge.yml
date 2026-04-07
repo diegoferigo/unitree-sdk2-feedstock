@@ -11,4 +11,5 @@ bot:
 build_platform:
   linux_aarch64: linux_aarch64
 provider:
+  linux_64: azure
   linux_aarch64: default
